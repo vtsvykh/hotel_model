@@ -113,6 +113,7 @@ def process_booking_requests(rooms, booking_requests, current_date):
                         if date in booked_rooms_by_date:
                             booked_rooms_by_date[date].append(best_option.room.number)
                         else:
+                            print('ghbdtn')
                             booked_rooms_by_date[date] = [best_option.room.number]
                 else:
                     print(f"Клиент {request.last_name} {request.first_name} отказался от бронирования.")
@@ -147,9 +148,7 @@ def print_report(booked_rooms_by_date, rooms, current_date):
 
     for room_type in set([room.room_type for room in rooms]):
         occupied_rooms = sum([1 for room in rooms if room.room_type == room_type and room.number not in booked_rooms_by_date])
-        print(occupied_rooms)
         total_rooms_type = sum([1 for room in rooms if room.room_type == room_type])
-        print(total_rooms_type)
         print(f"{room_type}: {round(occupied_rooms / total_rooms_type * 100, 2)}%")
     print(f"Процент загруженности гостиницы в целом: {round((total_rooms - empty_rooms) / total_rooms * 100, 2)}%")
     print(f"Полученный доход за день: {total_revenue} руб.")
@@ -161,10 +160,14 @@ def main():
     booking_requests = load_booking_requests("booking.txt")
     start_date = datetime(2020, 3, 1)
     end_date = start_date + timedelta(days=1)
-
     current_date = start_date
-    while current_date <= end_date:
-        print_report(process_booking_requests(rooms, booking_requests, current_date), rooms, current_date)
+    for day in range(1, 31):
+        order = []
+        for i in booking_requests:
+            if day == i.booking_date.day:
+                order.append(i)
+        print(len(order))
+        print_report(process_booking_requests(rooms, order, datetime(2020, 3, day)), rooms, current_date)
         current_date += timedelta(days=1)
 
 if __name__ == "__main__":
