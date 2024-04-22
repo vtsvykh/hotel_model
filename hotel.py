@@ -89,18 +89,23 @@ def process_booking_requests(rooms, booking_requests, current_date):
 
             for room in rooms:
                 if room.is_available(request.check_in_date, request.stay_days) and \
-                        room.capacity >= request.guests_count and \
-                        Room.calculate_price(room) <= request.max_price_per_person:
+                        room.capacity >= request.guests_count:
                     total_price = Room.calculate_price(room)
                     meal_prices = {
                         "Без питания": 0.00,
                         "Завтрак": 280.00,
                         "Полупансион": 1000.00
                     }
-                    for meal, price in meal_prices.items():
-                        if price <= request.max_price_per_person:
+                    if request.max_price_per_person - total_price >= meal_prices["Завтрак"]:
+                        if request.max_price_per_person - total_price >= meal_prices["Полупансион"]:
                             accommodation_options.append(AccommodationOption(room, request.check_in_date, request.stay_days,
-                                                                              request.guests_count, total_price, meal))
+                                                                              request.guests_count, total_price + meal_prices["Полупансион"], 'Полупансион'))
+                        else:
+                            accommodation_options.append(AccommodationOption(room, request.check_in_date, request.stay_days,
+                                                                              request.guests_count, total_price + meal_prices["Завтрак"], 'Завтрак'))
+                    else:
+                        accommodation_options.append(AccommodationOption(room, request.check_in_date, request.stay_days,
+                                                                              request.guests_count, total_price + meal_prices["Без питания"], 'Без питания'))
 
             if accommodation_options:
                 accommodation_options.sort(key=lambda x: x.total_price)
