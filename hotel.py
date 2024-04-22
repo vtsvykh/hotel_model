@@ -147,8 +147,12 @@ def print_report(booked_rooms_by_date, rooms, current_date):
     print("Процент загруженности отдельных категорий номеров:")
 
     for room_type in set([room.room_type for room in rooms]):
-        occupied_rooms = sum([1 for room in rooms if room.room_type == room_type and room.number not in booked_rooms_by_date])
+        if current_date in booked_rooms_by_date.keys():
+            occupied_rooms = sum([1 for room in rooms if room.room_type == room_type and room.number in booked_rooms_by_date[current_date]])
+        else:
+            occupied_rooms = 0
         total_rooms_type = sum([1 for room in rooms if room.room_type == room_type])
+
         print(f"{room_type}: {round(occupied_rooms / total_rooms_type * 100, 2)}%")
     print(f"Процент загруженности гостиницы в целом: {round((total_rooms - empty_rooms) / total_rooms * 100, 2)}%")
     print(f"Полученный доход за день: {total_revenue} руб.")
