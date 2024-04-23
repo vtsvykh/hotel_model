@@ -153,13 +153,6 @@ def print_report(booked_rooms_by_date, rooms, current_date):
     print('\n')
 
 
-"""
-            occupied_rooms = sum([1 for room in rooms if
-                                  room.room_type == room_type and room.number in booked_rooms_by_date[current_date]])
-            r = sum([1 for room in rooms if room.current_guests != []])
-            itog = occupied_rooms + r
-            print(itog)"""
-
 def main():
     """
     Function of main process.

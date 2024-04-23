@@ -32,7 +32,6 @@ class Room:
         self.price_per_person = self.calculate_price()
         self.current_guests = []
 
-
     def calculate_price(self):
         """
         Function of calculating price.
@@ -80,8 +79,10 @@ class Room:
         Outputs a string in a readable format.
         """
         return f'{self.number} {self.room_type} {self.capacity} {self.comfort_level} {self.price_per_person} {self.current_guests}'
+
     def __repr__(self):
         return self.__str__()
+
 
 class BookingRequest:
     """
@@ -132,6 +133,7 @@ class BookingRequest:
         """
         return self.__str__()
 
+
 class AccommodationOption:
     """
     Class of possible placement options.
@@ -167,9 +169,9 @@ class AccommodationOption:
         Outputs a string in a readable format.
         """
         return f'{self.room} {self.check_in_date} {self.stay_days} {self.guests_count} {self.total_price} {self.meal}'
+
     def __repr__(self):
         """
         Creates a string representation of an object.
         """
-
         return self.__str__()
