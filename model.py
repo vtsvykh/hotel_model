@@ -2,6 +2,8 @@ import hotel
 import random
 from datetime import datetime, timedelta
 import ru_local
+
+
 def load_rooms(filename):
     """
     Function of loading information about room data.
@@ -16,6 +18,7 @@ def load_rooms(filename):
             rooms.append(room)
     return rooms
 
+
 def load_booking_requests(filename):
     """
     Function of loading information about booking data.
@@ -29,11 +32,12 @@ def load_booking_requests(filename):
             booking_date = datetime.strptime(booking_info[0], '%d.%m.%Y')
             check_in_date = datetime.strptime(booking_info[5], '%d.%m.%Y')
             request = hotel.BookingRequest(booking_date, booking_info[1], booking_info[2], booking_info[3],
-                                      int(booking_info[4]), check_in_date, int(booking_info[6]),
-                                      float(booking_info[7]))
+                                           int(booking_info[4]), check_in_date, int(booking_info[6]),
+                                           float(booking_info[7]))
             booking_requests.append(request)
 
     return booking_requests
+
 
 def process_booking_requests(rooms, booking_requests, current_date):
     """
@@ -45,48 +49,58 @@ def process_booking_requests(rooms, booking_requests, current_date):
     """
     booked_rooms_by_date = {}
     for request in booking_requests:
-        if request.check_in_date <= current_date:
-            accommodation_options = []
+        accommodation_options = []
 
-            for room in rooms:
-                if room.is_available(request.check_in_date, request.stay_days) and \
-                        room.capacity >= request.guests_count:
-                    total_price = hotel.Room.calculate_price(room)
-                    meal_prices = {
-                        ru_local.WITHOUT_MEALS: 0.00,
-                        ru_local.BREAKFAST: 280.00,
-                        ru_local.HALF_BOARD: 1000.00
-                    }
-                    if request.budget - total_price >= meal_prices[ru_local.BREAKFAST]:
-                        if request.budget - total_price >= meal_prices[ru_local.HALF_BOARD]:
-                            accommodation_options.append(hotel.AccommodationOption(room, request.check_in_date, request.stay_days,
-                                                                              request.guests_count, total_price + meal_prices[ru_local.HALF_BOARD], ru_local.HALF_BOARD))
-                        else:
-                            accommodation_options.append(hotel.AccommodationOption(room, request.check_in_date, request.stay_days,
-                                                                              request.guests_count, total_price + meal_prices[ru_local.BREAKFAST], ru_local.BREAKFAST))
+        for room in rooms:
+            if room.is_available(request.check_in_date, request.stay_days) and \
+                    room.capacity >= request.guests_count:
+                total_price = hotel.Room.calculate_price(room)
+                meal_prices = {
+                    ru_local.WITHOUT_MEALS: 0.00,
+                    ru_local.BREAKFAST: 280.00,
+                    ru_local.HALF_BOARD: 1000.00
+                }
+                if request.budget - total_price >= meal_prices[ru_local.BREAKFAST]:
+                    if request.budget - total_price >= meal_prices[ru_local.HALF_BOARD]:
+                        accommodation_options.append(
+                            hotel.AccommodationOption(room, request.check_in_date, request.stay_days,
+                                                      request.guests_count,
+                                                      total_price + meal_prices[ru_local.HALF_BOARD],
+                                                      ru_local.HALF_BOARD))
                     else:
-                        accommodation_options.append(hotel.AccommodationOption(room, request.check_in_date, request.stay_days,
-                                                                              request.guests_count, total_price + meal_prices[ru_local.WITHOUT_MEALS], ru_local.WITHOUT_MEALS))
-
-            if accommodation_options:
-                accommodation_options.sort(key=lambda x: x.total_price)
-                best_option = accommodation_options[0]
-
-                if random.random() > 0.25:
-                    best_option.room.book(best_option.check_in_date, best_option.stay_days, best_option.guests_count, best_option.meal)
-                    for i in range(best_option.stay_days):
-                        date = best_option.check_in_date + timedelta(days=i)
-                        if date in booked_rooms_by_date:
-                            booked_rooms_by_date[date].append(best_option.room.number)
-                        else:
-                            booked_rooms_by_date[date] = [best_option.room.number]
+                        accommodation_options.append(
+                            hotel.AccommodationOption(room, request.check_in_date, request.stay_days,
+                                                      request.guests_count,
+                                                      total_price + meal_prices[ru_local.BREAKFAST],
+                                                      ru_local.BREAKFAST))
                 else:
-                    print(f'{ru_local.CLIENT} {request.last_name} {request.first_name} {ru_local.FAIL}.')
+                    accommodation_options.append(
+                        hotel.AccommodationOption(room, request.check_in_date, request.stay_days,
+                                                  request.guests_count,
+                                                  total_price + meal_prices[ru_local.WITHOUT_MEALS],
+                                                  ru_local.WITHOUT_MEALS))
+
+        if accommodation_options:
+            accommodation_options.sort(key=lambda x: x.total_price)
+            best_option = accommodation_options[0]
+
+            if random.random() > 0.25:
+                best_option.room.book(best_option.check_in_date, best_option.stay_days, best_option.guests_count)
+                for i in range(best_option.stay_days):
+                    date = best_option.check_in_date + timedelta(days=i)
+                    if date in booked_rooms_by_date:
+                        booked_rooms_by_date[date].append(best_option.room.number)
+                    else:
+                        booked_rooms_by_date[date] = [best_option.room.number]
             else:
-                print(f'{ru_local.REQUEST} {request.last_name} {request.first_name} {ru_local.ON} {request.guests_count}'
-                      f'{ru_local.PPL_DATE} {request.check_in_date.strftime("%d.%m.%Y")} {ru_local.NO_AVBL_ROOM}')
+                print(f'{ru_local.CLIENT} {request.last_name} {request.first_name} {ru_local.FAIL}.')
+        else:
+            print(
+                f'{ru_local.REQUEST} {request.last_name} {request.first_name} {ru_local.ON} {request.guests_count}'
+                f'{ru_local.PPL_DATE} {request.check_in_date.strftime("%d.%m.%Y")} {ru_local.NO_AVBL_ROOM}')
 
     return booked_rooms_by_date
+
 
 def calculate_revenue(booked_rooms_by_date, rooms):
     """
@@ -108,6 +122,7 @@ def calculate_revenue(booked_rooms_by_date, rooms):
 
     return total_revenue, missed_revenue, total_rooms - len(occupied_rooms)
 
+
 def print_report(booked_rooms_by_date, rooms, current_date):
     """
     Function print report.
@@ -125,7 +140,8 @@ def print_report(booked_rooms_by_date, rooms, current_date):
 
     for room_type in set([room.room_type for room in rooms]):
         if current_date in booked_rooms_by_date.keys():
-            occupied_rooms = sum([1 for room in rooms if room.room_type == room_type and room.number in booked_rooms_by_date[current_date]])
+            occupied_rooms = sum([1 for room in rooms if
+                                  room.room_type == room_type and room.number in booked_rooms_by_date[current_date]])
         else:
             occupied_rooms = 0
         total_rooms_type = sum([1 for room in rooms if room.room_type == room_type])
@@ -135,6 +151,15 @@ def print_report(booked_rooms_by_date, rooms, current_date):
     print(f'{ru_local.INCOME_DAY}: {total_revenue} {ru_local.CURRENCY}.')
     print(f'{ru_local.MISS_INCOME}: {missed_revenue} {ru_local.CURRENCY}.')
     print('\n')
+
+
+"""
+            occupied_rooms = sum([1 for room in rooms if
+                                  room.room_type == room_type and room.number in booked_rooms_by_date[current_date]])
+            r = sum([1 for room in rooms if room.current_guests != []])
+            itog = occupied_rooms + r
+            print(itog)"""
+
 def main():
     """
     Function of main process.
@@ -151,6 +176,7 @@ def main():
                 order.append(i)
         print_report(process_booking_requests(rooms, order, datetime(2020, 3, day)), rooms, current_date)
         current_date += timedelta(days=1)
+
 
 if __name__ == "__main__":
     main()
